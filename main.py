@@ -1,4 +1,5 @@
 """HTTP server main functionality."""
+import logging
 import re
 import signal
 import socketserver
@@ -147,6 +148,7 @@ class Application:
         port : int
             The port on which we will listen for requests.
         """
+        logging.info(f"Serving on {host}:{port}")
         with ApplicationServer((host, port), TCPHandler, routes=self.routes) as server:
             server.serve_forever()
 
