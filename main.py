@@ -3,7 +3,6 @@ import logging
 import re
 import signal
 import socketserver
-import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 from socket import SHUT_WR, socket
@@ -43,7 +42,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
         except ApiException as exc:
             response = exc
         except Exception:
-            print(traceback.format_exc())
+            logging.exception(f"An exception occurred while handling the request.")
             response = ApiException({"ok": False}, 500)
         response_str = build_response(response)
         self._write_to_file(response_str, "response")
@@ -127,11 +126,7 @@ class Application:
         """
 
         def _decorator(func: Callable):
-            def _inner():
-                return func()
-
             self.routes.append((re.compile(path + "$"), func))
-            return _inner
 
         return _decorator
 
