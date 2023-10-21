@@ -108,10 +108,9 @@ class TCPHandler(socketserver.BaseRequestHandler):
 class Application:
     """Represent the main Application."""
 
-    routes: list[Route] = []
-
     def __init__(self):
         """Shutdown on SIGTERM signal."""
+        self.routes: list[Route] = []
         signal.signal(signal.SIGTERM, self.shutdown)
 
     def route(self, path: str) -> Callable:
