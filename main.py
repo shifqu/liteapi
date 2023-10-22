@@ -4,12 +4,14 @@ import re
 import signal
 import socketserver
 from datetime import datetime, timezone
+from functools import wraps
 from pathlib import Path
 from socket import SHUT_WR, socket
 from typing import Callable, NoReturn
 
 from liteapi.config import server_config
 from liteapi.errors import ApiException
+from liteapi.models import Request, Response
 from liteapi.utils import build_response, parse_request
 
 Route = tuple[re.Pattern, Callable]
@@ -116,7 +118,7 @@ class Application:
     def route(self, path: str) -> Callable:
         """Register the given path as a route.
 
-        The decorated function is executed it once a request on the given path is received.
+        The decorated function is executed once a request on the given path is received.
 
         Parameters
         ----------
@@ -124,8 +126,13 @@ class Application:
             The path to be added as a route.
         """
 
-        def _decorator(func: Callable):
-            self.routes.append((re.compile(path + "$"), func))
+        def _decorator(func: Callable[[Request], Response]):
+            @wraps(func)
+            def _wrapper(request: Request) -> Response:
+                return func(request)
+
+            self.routes.append((re.compile(path + "$"), _wrapper))
+            return _wrapper
 
         return _decorator
 
